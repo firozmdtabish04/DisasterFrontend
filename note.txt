@@ -4,25 +4,7 @@ cd enterprise-frontend
 
 npm install
 
-npm install react-router-dom axios zustand
 
-npm install @tanstack/react-query
-
-npm install react-hook-form zod @hookform/resolvers
-
-npm install @mui/material @mui/x-data-grid @emotion/react @emotion/styled
-
-npm install lucide-react
-
-npm install recharts
-
-npm install three @react-three/fiber @react-three/drei
-
-npm install framer-motion
-
-npm install sonner
-
-npm install date-fns
 
 
 npm install -D eslint prettier eslint-config-prettier
