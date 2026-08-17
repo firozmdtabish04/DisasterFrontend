@@ -34,3 +34,11 @@ export const refreshToken = async (refreshTokenValue) => {
 
   return response.data;
 };
+
+export const logoutUser = async (refreshTokenValue) => {
+  const response = await api.post("/auth/logout", {
+    refreshToken: refreshTokenValue,
+  });
+
+  return response.data;
+};

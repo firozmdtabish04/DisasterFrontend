@@ -40,39 +40,40 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    try {
-      const response = await loginUser(form);
+  try {
+    const response = await loginUser(form);
 
-      if (!response.success) {
-        throw new Error(response.message);
-      }
-
-      login(response.data);
-
-      const role = response.data.role;
-
-      if (role === "ADMIN") {
-        navigate("/admin/dashboard");
-      } else if (role === "EMPLOYEE") {
-        navigate("/employee/dashboard");
-      } else {
-        navigate("/dashboard");
-      }
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Login failed. Please check your credentials."
-      );
-    } finally {
-      setLoading(false);
+    if (!response.success) {
+      throw new Error(response.message);
     }
-  };
+
+    // ⬇️ Pass response.data AND form.username ⬇️
+    login(response.data, form.username);
+
+    const role = response.data.role;
+
+    if (role === "ADMIN") {
+      navigate("/admin/dashboard");
+    } else if (role === "EMPLOYEE") {
+      navigate("/employee/dashboard");
+    } else {
+      navigate("/dashboard");
+    }
+  } catch (err) {
+    setError(
+      err.response?.data?.message ||
+        err.message ||
+        "Authentication failed."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="p-4 min-h-screen w-full bg-slate-100 justify-center font-sans flex items-center sm:p-6 md:p-8">

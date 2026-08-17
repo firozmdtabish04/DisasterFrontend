@@ -5,140 +5,133 @@ import React, {
   useState,
 } from "react";
 
-const AuthContext = createContext(null);
+import { logoutUser } from "../service/authService";
+
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
-  const [refreshToken, setRefreshToken] = useState(null);
-  const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check JWT expiration
-  const isTokenValid = (token) => {
-    try {
-      if (!token) return false;
-
-      const payload = JSON.parse(atob(token.split(".")[1]));
-
-      const currentTime = Math.floor(Date.now() / 1000);
-
-      return payload.exp > currentTime;
-    } catch (error) {
-      console.error("Invalid JWT:", error);
-      return false;
-    }
-  };
-
-  // Load authentication state
+  // Restore authentication after refresh
   useEffect(() => {
-    const storedAccessToken = localStorage.getItem("accessToken");
-    const storedRefreshToken = localStorage.getItem("refreshToken");
-    const storedRole = localStorage.getItem("role");
-    const storedUser = localStorage.getItem("user");
+    const accessToken = localStorage.getItem("accessToken");
+    const role = localStorage.getItem("role");
+    const username = localStorage.getItem("username");
 
-    // No access token
-    if (!storedAccessToken) {
-      setLoading(false);
-      return;
-    }
-
-    // Access token exists but expired
-    if (!isTokenValid(storedAccessToken)) {
-      console.log("Access token expired. Clearing session.");
-
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("role");
-      localStorage.removeItem("user");
-
-      setAccessToken(null);
-      setRefreshToken(null);
-      setRole(null);
-      setUser(null);
-
-      setLoading(false);
-      return;
-    }
-
-    // Valid authentication
-    setAccessToken(storedAccessToken);
-
-    if (storedRefreshToken) {
-      setRefreshToken(storedRefreshToken);
-    }
-
-    if (storedRole) {
-      setRole(storedRole);
-    }
-
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem("user");
-      }
+    if (accessToken) {
+      setUser({
+        username: username || "Operator",
+        role: role || "USER",
+      });
     }
 
     setLoading(false);
   }, []);
 
-  // Login
-  const login = (authData) => {
+  // Save login information
+  const handleAuthSuccess = (authData, usernameInput) => {
     const {
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
-      role: newRole,
-      user: newUser,
+      accessToken,
+      refreshToken,
+      role,
     } = authData;
 
-    localStorage.setItem("accessToken", newAccessToken);
-    localStorage.setItem("refreshToken", newRefreshToken);
-    localStorage.setItem("role", newRole);
+    const username =
+      authData.username ||
+      usernameInput ||
+      "Operator";
 
-    if (newUser) {
-      localStorage.setItem("user", JSON.stringify(newUser));
-      setUser(newUser);
+    localStorage.setItem(
+      "accessToken",
+      accessToken
+    );
+
+    if (refreshToken) {
+      localStorage.setItem(
+        "refreshToken",
+        refreshToken
+      );
     }
 
-    setAccessToken(newAccessToken);
-    setRefreshToken(newRefreshToken);
-    setRole(newRole);
+    localStorage.setItem(
+      "role",
+      role || "USER"
+    );
 
-    window.dispatchEvent(new Event("storage"));
+    localStorage.setItem(
+      "username",
+      username
+    );
+
+    setUser({
+      username,
+      role: role || "USER",
+    });
+  };
+
+  // Login
+  const login = (authData, usernameInput) => {
+    if (!authData?.accessToken) {
+      console.error("Invalid authentication data");
+
+      return {
+        success: false,
+        message: "Authentication failed",
+      };
+    }
+
+    handleAuthSuccess(
+      authData,
+      usernameInput
+    );
+
+    return {
+      success: true,
+    };
   };
 
   // Logout
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("role");
-    localStorage.removeItem("user");
+  const logout = async () => {
+    const refreshToken =
+      localStorage.getItem("refreshToken");
 
-    setAccessToken(null);
-    setRefreshToken(null);
-    setRole(null);
-    setUser(null);
+    try {
+      if (refreshToken) {
+        await logoutUser(refreshToken);
+      }
+    } catch (error) {
+      console.error(
+        "Backend logout failed:",
+        error
+      );
+    } finally {
+      // Always clear frontend session
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("role");
+      localStorage.removeItem("username");
+      localStorage.removeItem("user");
+
+      setUser(null);
+    }
   };
 
   const isAuthenticated =
-    Boolean(accessToken) && isTokenValid(accessToken);
+    Boolean(localStorage.getItem("accessToken"));
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        setUser,
-        accessToken,
-        refreshToken,
-        role,
         loading,
-        isAuthenticated,
         login,
         logout,
+        setUser,
+        isAuthenticated,
       }}
     >
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
@@ -148,9 +141,11 @@ export const useAuth = () => {
 
   if (!context) {
     throw new Error(
-      "useAuth must be used inside AuthProvider"
+      "useAuth must be used within an AuthProvider"
     );
   }
 
   return context;
 };
+
+export default AuthContext;
