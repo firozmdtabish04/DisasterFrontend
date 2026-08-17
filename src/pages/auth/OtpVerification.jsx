@@ -1,181 +1,146 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
-
-import { authService } from "../../service/auth/authService";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  sendOtp,
+  verifyOtp,
+} from "../../service/authService";
 import { useAuth } from "../../context/AuthContext";
 
-export default function OtpVerification() {
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-
-  const { verifyOtp } = useAuth();
+const OtpVerification = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSendOtp = async (e) => {
+  const { login } = useAuth();
+
+  const email = location.state?.email;
+
+  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const handleVerify = async (e) => {
     e.preventDefault();
 
-    if (!email.trim()) {
-      toast.error("Please enter your email");
+    if (!email) {
+      setError("Email is missing.");
       return;
     }
 
     setLoading(true);
+    setError("");
+    setMessage("");
 
     try {
-      const res = await authService.sendOtp(email);
+      const response = await verifyOtp(email, otp);
 
-      if (res.success) {
-        toast.success(
-          res.message || "OTP sent to your email!"
-        );
-
-        setStep(2);
-      } else {
-        toast.error(
-          res.message || "Failed to send OTP"
-        );
+      if (!response.success) {
+        throw new Error(response.message);
       }
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-        "Failed to send OTP"
+
+      login(response.data);
+
+      const role = response.data.role;
+
+      if (role === "ADMIN") {
+        navigate("/admin/dashboard");
+      } else if (role === "EMPLOYEE") {
+        navigate("/employee/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          error.message ||
+          "Invalid OTP"
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
+  const handleResend = async () => {
+    if (!email) return;
 
-    if (!otp || otp.length !== 6) {
-      toast.error("Please enter a valid 6-digit OTP");
-      return;
-    }
-
-    setLoading(true);
+    setResending(true);
+    setError("");
+    setMessage("");
 
     try {
-      const res = await verifyOtp(email, otp);
+      const response = await sendOtp(email);
 
-      if (res.success) {
-        toast.success(
-          res.message || "OTP verified successfully!"
-        );
-
-        navigate("/dashboard");
-      } else {
-        toast.error(
-          res.message || "Invalid OTP"
-        );
-      }
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-        "Invalid OTP"
+      setMessage(response.message || "OTP sent successfully");
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Unable to resend OTP"
       );
     } finally {
-      setLoading(false);
+      setResending(false);
     }
   };
 
   return (
-    <div className="p-4 min-h-screen justify-center bg-gray-900 text-white flex items-center">
-      <div className="p-8 w-full max-w-md rounded-xl border border-gray-700 bg-gray-800 shadow-2xl">
+    <div className="px-4 min-h-screen justify-center bg-slate-950 flex items-center">
+      <div className="p-8 w-full max-w-md rounded-2xl bg-white shadow-2xl">
+        <h1 className="text-3xl font-bold text-slate-900">
+          Verify OTP
+        </h1>
 
-        <h2 className="mb-6 text-center text-2xl font-bold text-blue-500">
-          {step === 1
-            ? "Request OTP"
-            : "Verify OTP"}
-        </h2>
+        <p className="mt-2 text-sm text-slate-500">
+          Enter the OTP sent to
+        </p>
 
-        {step === 1 ? (
-          <form
-            onSubmit={handleSendOtp}
-            className="space-y-4"
-          >
-            <div>
-              <label className="mb-1 text-sm text-gray-400 block">
-                Email Address
-              </label>
+        <p className="mb-6 font-semibold text-blue-600">
+          {email}
+        </p>
 
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) =>
-                  setEmail(e.target.value)
-                }
-                placeholder="Enter your email"
-                className="px-4 py-2 w-full rounded border border-gray-600 bg-gray-700 text-white outline-none focus:border-blue-500"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="py-3 w-full rounded bg-blue-600 font-semibold transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading
-                ? "Sending..."
-                : "Send OTP"}
-            </button>
-          </form>
-        ) : (
-          <form
-            onSubmit={handleVerifyOtp}
-            className="space-y-4"
-          >
-            <div>
-              <label className="mb-1 text-sm text-gray-400 block">
-                Enter OTP Code
-              </label>
-
-              <input
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                required
-                maxLength={6}
-                value={otp}
-                onChange={(e) =>
-                  setOtp(
-                    e.target.value
-                      .replace(/\D/g, "")
-                      .slice(0, 6)
-                  )
-                }
-                placeholder="000000"
-                className="px-4 py-2 w-full rounded border border-gray-600 bg-gray-700 text-center text-xl text-white tracking-[0.5em] outline-none focus:border-blue-500"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="py-3 w-full rounded bg-green-600 font-semibold transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading
-                ? "Verifying..."
-                : "Verify OTP"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setStep(1);
-                setOtp("");
-              }}
-              className="w-full text-sm text-gray-400 hover:text-white hover:underline"
-            >
-              Change Email
-            </button>
-          </form>
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 text-sm text-red-600">
+            {error}
+          </div>
         )}
+
+        {message && (
+          <div className="mb-4 p-3 rounded-lg bg-green-50 text-sm text-green-600">
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleVerify}>
+          <input
+            type="text"
+            maxLength={6}
+            value={otp}
+            onChange={(e) =>
+              setOtp(e.target.value.replace(/\D/g, ""))
+            }
+            placeholder="Enter 6-digit OTP"
+            className="px-4 py-4 w-full rounded-lg border border-slate-300 text-center text-2xl tracking-[0.5em] outline-none focus:border-blue-500"
+            required
+          />
+
+          <button
+            type="submit"
+            disabled={loading || otp.length !== 6}
+            className="mt-5 py-3 w-full rounded-lg bg-blue-600 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? "Verifying..." : "Verify OTP"}
+          </button>
+        </form>
+
+        <button
+          onClick={handleResend}
+          disabled={resending}
+          className="mt-5 w-full text-sm font-semibold text-blue-600 hover:underline"
+        >
+          {resending ? "Sending..." : "Resend OTP"}
+        </button>
       </div>
     </div>
   );
-}
+};
+
+export default OtpVerification;
