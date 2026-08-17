@@ -18,6 +18,7 @@ export const router = createBrowserRouter([
     element: <Navigate to="/login" replace />,
   },
 
+  // PUBLIC ROUTES
   {
     path: "/login",
     element: <Login />,
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
 
 
 
+  // PROTECTED ROUTES
   {
     element: <AuthGuard />,
     children: [
@@ -45,6 +47,7 @@ export const router = createBrowserRouter([
     ],
   },
 
+  // UNKNOWN ROUTES
   {
     path: "*",
     element: <Navigate to="/login" replace />,
