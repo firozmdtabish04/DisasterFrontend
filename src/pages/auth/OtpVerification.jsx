@@ -1,17 +1,41 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { sendOtp, verifyOtp } from "../../service/authService";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
+import {
+  sendOtp,
+  verifyOtp,
+} from "../../service/authService";
+
 import { useAuth } from "../../context/AuthContext";
 
 const OtpVerification = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
 
-const email = location.state?.email;
-const username = location.state?.username;
+  const {
+    login,
+    isAuthenticated,
+  } = useAuth();
 
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const email = location.state?.email;
+  const username = location.state?.username;
+
+  const [otp, setOtp] = useState([
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ]);
+
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [countdown, setCountdown] = useState(30);
@@ -20,16 +44,41 @@ const username = location.state?.username;
 
   const inputRefs = useRef([]);
 
-  // Redirect if user directly opens /verify-otp
-  useEffect(() => {
-    if (!email) {
-      navigate("/register", { replace: true });
-    }
-  }, [email, navigate]);
+  // =====================================================
+  // AUTH PAGE PROTECTION
+  // =====================================================
 
-  // Countdown
   useEffect(() => {
-    if (countdown <= 0) return;
+    // Already logged in
+    if (isAuthenticated) {
+      navigate("/dashboard", {
+        replace: true,
+      });
+
+      return;
+    }
+
+    // Direct access without registration flow
+    if (!email || !username) {
+      navigate("/register", {
+        replace: true,
+      });
+    }
+  }, [
+    email,
+    username,
+    isAuthenticated,
+    navigate,
+  ]);
+
+  // =====================================================
+  // OTP COUNTDOWN
+  // =====================================================
+
+  useEffect(() => {
+    if (countdown <= 0) {
+      return;
+    }
 
     const timer = setInterval(() => {
       setCountdown((prev) => prev - 1);
@@ -38,34 +87,44 @@ const username = location.state?.username;
     return () => clearInterval(timer);
   }, [countdown]);
 
-  const handleChange = (value, index) => {
-    const digit = value.replace(/\D/g, "");
+  // =====================================================
+  // OTP INPUT
+  // =====================================================
 
-    if (!digit) {
-      const updatedOtp = [...otp];
-      updatedOtp[index] = "";
-      setOtp(updatedOtp);
-      return;
-    }
+  const handleChange = (value, index) => {
+    const digit = value
+      .replace(/\D/g, "")
+      .slice(-1);
 
     const updatedOtp = [...otp];
-    updatedOtp[index] = digit[0];
+
+    updatedOtp[index] = digit;
 
     setOtp(updatedOtp);
 
-    // Move to next input
-    if (index < 5) {
+    if (digit && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
+  // =====================================================
+  // BACKSPACE
+  // =====================================================
+
   const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
+    if (
+      e.key === "Backspace" &&
+      !otp[index] &&
+      index > 0
+    ) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
-  // Paste complete OTP
+  // =====================================================
+  // PASTE OTP
+  // =====================================================
+
   const handlePaste = (e) => {
     e.preventDefault();
 
@@ -74,19 +133,38 @@ const username = location.state?.username;
       .replace(/\D/g, "")
       .slice(0, 6);
 
-    if (!pastedData) return;
+    if (!pastedData) {
+      return;
+    }
 
-    const updatedOtp = [...otp];
+    const updatedOtp = [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+    ];
 
-    pastedData.split("").forEach((digit, index) => {
-      updatedOtp[index] = digit;
-    });
+    pastedData
+      .split("")
+      .forEach((digit, index) => {
+        updatedOtp[index] = digit;
+      });
 
     setOtp(updatedOtp);
 
-    const nextIndex = Math.min(pastedData.length, 5);
+    const nextIndex = Math.min(
+      pastedData.length,
+      5
+    );
+
     inputRefs.current[nextIndex]?.focus();
   };
+
+  // =====================================================
+  // VERIFY OTP
+  // =====================================================
 
   const handleVerify = async (e) => {
     e.preventDefault();
@@ -94,7 +172,16 @@ const username = location.state?.username;
     const otpValue = otp.join("");
 
     if (otpValue.length !== 6) {
-      setError("Please enter the complete 6-digit OTP.");
+      setError(
+        "Please enter the complete 6-digit OTP."
+      );
+      return;
+    }
+
+    if (!email || !username) {
+      setError(
+        "Registration session expired. Please register again."
+      );
       return;
     }
 
@@ -103,23 +190,52 @@ const username = location.state?.username;
     setMessage("");
 
     try {
-      const response = await verifyOtp(email, otpValue);
+      const response = await verifyOtp(
+        email,
+        otpValue
+      );
 
-      if (!response.success) {
-        throw new Error(response.message);
+      if (!response?.success) {
+        throw new Error(
+          response?.message ||
+            "OTP verification failed"
+        );
       }
 
-      // Store accessToken, refreshToken and role
-    login(response.data, username);
+      // Backend returns:
+      // accessToken
+      // refreshToken
+      // role
+
+      const authResult = login(
+        response.data,
+        username
+      );
+
+      if (!authResult?.success) {
+        throw new Error(
+          "Unable to create authentication session."
+        );
+      }
 
       const role = response.data.role;
 
+      // =================================================
+      // ROLE BASED REDIRECT
+      // =================================================
+
       if (role === "ADMIN") {
-        navigate("/admin/dashboard");
+        navigate("/admin/dashboard", {
+          replace: true,
+        });
       } else if (role === "EMPLOYEE") {
-        navigate("/employee/dashboard");
+        navigate("/employee/dashboard", {
+          replace: true,
+        });
       } else {
-        navigate("/dashboard");
+        navigate("/dashboard", {
+          replace: true,
+        });
       }
     } catch (error) {
       setError(
@@ -132,8 +248,18 @@ const username = location.state?.username;
     }
   };
 
+  // =====================================================
+  // RESEND OTP
+  // =====================================================
+
   const handleResend = async () => {
-    if (countdown > 0 || resending || !email) return;
+    if (
+      countdown > 0 ||
+      resending ||
+      !email
+    ) {
+      return;
+    }
 
     setResending(true);
     setError("");
@@ -142,10 +268,22 @@ const username = location.state?.username;
     try {
       const response = await sendOtp(email);
 
-      setMessage(response.message || "OTP sent successfully.");
+      setMessage(
+        response?.message ||
+          "OTP sent successfully."
+      );
+
       setCountdown(30);
 
-      setOtp(["", "", "", "", "", ""]);
+      setOtp([
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+      ]);
+
       inputRefs.current[0]?.focus();
     } catch (error) {
       setError(
@@ -157,13 +295,20 @@ const username = location.state?.username;
     }
   };
 
+  // =====================================================
+  // UI
+  // =====================================================
+
   return (
     <div className="px-4 min-h-screen justify-center bg-slate-950 flex items-center">
+
       <div className="p-8 w-full max-w-md rounded-2xl bg-white shadow-2xl">
 
         {/* Header */}
         <div className="text-center">
+
           <div className="mb-5 mx-auto h-16 w-16 justify-center rounded-full bg-blue-100 flex items-center">
+
             <svg
               className="h-8 w-8 text-blue-600"
               fill="none"
@@ -177,6 +322,7 @@ const username = location.state?.username;
                 d="M16.5 10.5V7a4.5 4.5 0 00-9 0v3.5M6 10.5h12a1.5 1.5 0 011.5 1.5v7A1.5 1.5 0 0118 20.5H6A1.5 1.5 0 014.5 19v-7A1.5 1.5 0 016 10.5z"
               />
             </svg>
+
           </div>
 
           <h1 className="text-3xl font-bold text-slate-900">
@@ -190,6 +336,7 @@ const username = location.state?.username;
           <p className="mt-1 break-all font-semibold text-blue-600">
             {email}
           </p>
+
         </div>
 
         {/* Error */}
@@ -206,45 +353,62 @@ const username = location.state?.username;
           </div>
         )}
 
-        {/* OTP Form */}
-        <form onSubmit={handleVerify} className="mt-8">
+        {/* OTP */}
+        <form
+          onSubmit={handleVerify}
+          className="mt-8"
+        >
 
           <div className="flex justify-center gap-3">
+
             {otp.map((digit, index) => (
               <input
                 key={index}
                 ref={(element) => {
-                  inputRefs.current[index] = element;
+                  inputRefs.current[index] =
+                    element;
                 }}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
                 value={digit}
                 onChange={(e) =>
-                  handleChange(e.target.value, index)
+                  handleChange(
+                    e.target.value,
+                    index
+                  )
                 }
                 onKeyDown={(e) =>
                   handleKeyDown(e, index)
                 }
                 onPaste={handlePaste}
                 className="h-14 w-12 rounded-lg border border-slate-300 text-center text-2xl font-semibold text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                aria-label={`OTP digit ${index + 1}`}
+                aria-label={`OTP digit ${
+                  index + 1
+                }`}
               />
             ))}
+
           </div>
 
-          {/* Verify */}
           <button
             type="submit"
-            disabled={loading || otp.join("").length !== 6}
+            disabled={
+              loading ||
+              otp.join("").length !== 6
+            }
             className="mt-8 w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? "Verifying..." : "Verify OTP"}
+            {loading
+              ? "Verifying..."
+              : "Verify OTP"}
           </button>
+
         </form>
 
         {/* Resend */}
         <div className="mt-6 text-center">
+
           <p className="text-sm text-slate-500">
             Didn't receive the code?
           </p>
@@ -252,7 +416,10 @@ const username = location.state?.username;
           <button
             type="button"
             onClick={handleResend}
-            disabled={countdown > 0 || resending}
+            disabled={
+              countdown > 0 ||
+              resending
+            }
             className="mt-2 text-sm font-semibold text-blue-600 hover:underline disabled:cursor-not-allowed disabled:text-slate-400 disabled:no-underline"
           >
             {resending
@@ -261,17 +428,24 @@ const username = location.state?.username;
               ? `Resend OTP in ${countdown}s`
               : "Resend OTP"}
           </button>
+
         </div>
 
         {/* Back */}
         <button
           type="button"
-          onClick={() => navigate("/register")}
+          onClick={() =>
+            navigate("/register", {
+              replace: true,
+            })
+          }
           className="mt-6 w-full text-sm text-slate-500 hover:text-blue-600"
         >
           ← Back to registration
         </button>
+
       </div>
+
     </div>
   );
 };
