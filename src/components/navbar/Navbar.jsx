@@ -15,6 +15,7 @@ import {
   Shield,
   Info,
   Layers,
+  MapPinned
 
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -105,6 +106,18 @@ const Navbar = () => {
                 <LayoutDashboard className="w-4 h-4" />
                 <span>Dashboard</span>
               </Link>
+              
+            <Link
+  to="/live-map"
+  className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 ${
+    isActive("/live-map")
+      ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
+      : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+  }`}
+>
+  <MapPinned className="w-4 h-4" />
+  <span>Live Incident Map</span>
+</Link>
 
               {/* Services Dropdown */}
               <div className="relative" ref={servicesRef}>
@@ -125,17 +138,7 @@ const Navbar = () => {
                 {servicesDropdownOpen && (
                   <div className="mt-2 p-2 w-60 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-50 absolute left-0 animate-in fade-in duration-150">
                     
-                    <Link
-                      to="/live-map"
-                      onClick={() => setServicesDropdownOpen(false)}
-                      className="px-3 py-2.5 rounded-xl text-xs text-slate-300 flex items-center space-x-3 hover:text-white hover:bg-slate-800 transition"
-                    >
-                      <Map className="w-4 h-4 text-cyan-400" />
-                      <div>
-                        <p className="font-semibold text-slate-200">Live Incident Map</p>
-                        <p className="text-[10px] text-slate-400">GIS Satellite Disaster Tracking</p>
-                      </div>
-                    </Link>
+                   
 
                     <Link
                       to="/alerts"
@@ -168,7 +171,7 @@ const Navbar = () => {
                     >
                       <Info className="w-4 h-4 text-purple-400" />
                       <div>
-                        <p className="font-semibold text-slate-200">About WEFD Network</p>
+                        <p className="font-semibold text-slate-200">About ResqueOS Network</p>
                         <p className="text-[10px] text-slate-400">Mission & Partner Agencies</p>
                       </div>
                     </Link>

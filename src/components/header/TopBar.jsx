@@ -23,7 +23,7 @@ const TopBar = () => {
 
       window.open(
         `https://wa.me/${targetPhone}?text=${encodeURIComponent(
-          "🚨 WEFD EMERGENCY SOS ALERT!"
+          "🚨 ResqueOS EMERGENCY SOS ALERT!"
         )}`,
         "_blank"
       );
@@ -51,7 +51,7 @@ const TopBar = () => {
         const googleMapsLink =
           `https://maps.google.com/?q=${latitude},${longitude}`;
 
-        const emergencyMessage = `🚨 *WEFD EMERGENCY DISASTER SOS*
+        const emergencyMessage = `🚨 *ResqueOS EMERGENCY DISASTER SOS*
 
 👤 *User:* ${
           user?.username || "Emergency Victim"
@@ -96,7 +96,7 @@ ${googleMapsLink}
           "Location permission unavailable."
         );
 
-        const fallbackMessage = `🚨 *WEFD EMERGENCY DISASTER SOS*
+        const fallbackMessage = `🚨 *ResqueOS EMERGENCY DISASTER SOS*
 
 👤 *User:* ${
           user?.username || "Emergency Victim"
@@ -135,7 +135,7 @@ ${googleMapsLink}
           </span>
 
           <span className="text-slate-400 truncate hidden sm:inline">
-            WEFD Satellite Telemetry Online • Radar Active Across Emergency Nodes
+            ResqueOS Satellite Telemetry Online • Radar Active Across Emergency Nodes
           </span>
 
         </div>
@@ -145,7 +145,7 @@ ${googleMapsLink}
 
           {/* Control Room Email */}
           <a
-            href="mailto:control@wefd.org"
+            href="mailto:control@ResqueOS.org"
             className="hidden lg:flex items-center space-x-1 hover:text-blue-400 transition"
           >
             <Mail className="w-3 h-3 text-blue-400" />

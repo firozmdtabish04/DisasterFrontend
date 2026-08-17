@@ -123,7 +123,7 @@ const Login = () => {
             {/* System Status Pill */}
             <div className="px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-mono inline-flex items-center space-x-2 backdrop-blur-md">
               <Radio className="w-3.5 h-3.5 text-blue-400 animate-ping" />
-              <span>LIVE GRID ONLINE • WEFD v4.2</span>
+              <span>LIVE GRID ONLINE • ResqueOS v4.2</span>
             </div>
 
             <div className="pt-1 flex items-center space-x-3.5">
@@ -216,7 +216,7 @@ const Login = () => {
               Command Access
             </h2>
             <p className="mt-1 text-xs text-slate-500">
-              Sign in to authenticate with WEFD tactical telemetry
+              Sign in to authenticate with ResqueOS tactical telemetry
             </p>
           </div>
 
