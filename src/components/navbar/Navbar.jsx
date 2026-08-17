@@ -74,8 +74,8 @@ const Navbar = () => {
                   <ShieldAlert className="w-6 h-6 animate-pulse" />
                 </div>
                 <div>
-                  <span className="gap-1.5 text-lg font-bold text-white tracking-wider uppercase flex items-center">
-                    WEFD <span className="text-blue-500 font-extrabold">RESQUE OS</span>
+                  <span className="gap-1.5 text-lg font-bold text-white tracking-wider flex items-center">
+                     <span className="text-blue-500 font-extrabold">ResqueOS</span>
                   </span>
                   <p className="text-[10px] text-slate-400 tracking-tight hidden sm:block">
                     World Emergency & Forecasting Network
