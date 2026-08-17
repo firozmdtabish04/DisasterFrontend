@@ -59,11 +59,12 @@ const Register = () => {
       await sendOtp(form.email);
 
       // Redirect to OTP verification page
-      navigate("/verify-otp", {
-        state: {
-          email: form.email,
-        },
-      });
+     navigate("/verify-otp", {
+  state: {
+    email: form.email,
+    username: form.username,
+  },
+});
     } catch (err) {
       setError(
         err.response?.data?.message ||

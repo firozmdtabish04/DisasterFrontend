@@ -8,7 +8,8 @@ const OtpVerification = () => {
   const location = useLocation();
   const { login } = useAuth();
 
-  const email = location.state?.email;
+const email = location.state?.email;
+const username = location.state?.username;
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
@@ -109,7 +110,7 @@ const OtpVerification = () => {
       }
 
       // Store accessToken, refreshToken and role
-      login(response.data);
+    login(response.data, username);
 
       const role = response.data.role;
 
