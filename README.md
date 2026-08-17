@@ -1,18 +1,315 @@
-# React + Vite
+npm create vite@latest disaster-frontend -- --template react-ts
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+cd enterprise-frontend
 
-Currently, two official plugins are available:
+npm install
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+npm install react-router-dom axios zustand
 
-## React Compiler
+npm install @tanstack/react-query
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+npm install react-hook-form zod @hookform/resolvers
 
-Note: This will impact Vite dev & build performances.
+npm install @mui/material @mui/x-data-grid @emotion/react @emotion/styled
 
-## Expanding the Oxlint configuration
+npm install lucide-react
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+npm install recharts
+
+npm install three @react-three/fiber @react-three/drei
+
+npm install framer-motion
+
+npm install sonner
+
+npm install date-fns
+
+
+npm install -D eslint prettier eslint-config-prettier
+npm install -D vitest @testing-library/react @testing-library/jest-dom
+npm install -D playwright
+
+npm install -D tailwindcss@3.4.19 postcss autoprefixer
+npx tailwindcss init -p
+
+index.css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+
+tailwind.config.js:
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  darkMode: "class",
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+
+
+Backend
+
+src/main/java/com/example/disaster/
+│
+├── DisasterApplication.java
+│
+├── config/
+│
+├── controller/
+│
+├── service/
+│
+├── repository/
+│
+├── entity/
+│
+├── dto/
+│
+├── mapper/
+│
+├── security/
+│
+├── exception/
+│
+├── util/
+│
+├── kafka/
+│
+├── redis/
+│
+├── websocket/
+│
+└── ai/ which one class interface enum and more 
+
+
+
+
+src/
+│
+├── main.tsx
+├── App.tsx
+│
+├── app/
+│   ├── router.tsx
+│   ├── providers.tsx
+│   └── queryClient.ts
+│
+├── assets/
+│   ├── images/
+│   ├── icons/
+│   └── fonts/
+│
+├── components/
+│   │
+│   ├── common/
+│   │   ├── Button.tsx
+│   │   ├── Modal.tsx
+│   │   ├── Loader.tsx
+│   │   ├── Skeleton.tsx
+│   │   ├── EmptyState.tsx
+│   │   ├── ErrorState.tsx
+│   │   └── ConfirmDialog.tsx
+│   │
+│   ├── layout/
+│   │   ├── Navbar.tsx
+│   │   ├── Sidebar.tsx
+│   │   ├── Header.tsx
+│   │   ├── Footer.tsx
+│   │   └── Breadcrumb.tsx
+│   │
+│   ├── data-grid/
+│   │   ├── EnterpriseDataGrid.tsx
+│   │   ├── DataGridToolbar.tsx
+│   │   ├── GridPagination.tsx
+│   │   └── GridActions.tsx
+│   │
+│   └── charts/
+│       ├── LineChart.tsx
+│       ├── BarChart.tsx
+│       ├── PieChart.tsx
+│       └── AreaChart.tsx
+│
+├── layouts/
+│   ├── AuthLayout.tsx
+│   ├── DashboardLayout.tsx
+│   └── BlankLayout.tsx
+│
+├── pages/
+│   ├── error/
+│   │   ├── NotFound.tsx
+│   │   ├── Unauthorized.tsx
+│   │   └── ServerError.tsx
+│   │
+│   └── landing/
+│       └── Home.tsx
+│
+├── features/
+│   │
+│   ├── auth/
+│   │   ├── api/
+│   │   │   └── auth.api.ts
+│   │   ├── components/
+│   │   │   ├── LoginForm.tsx
+│   │   │   ├── RegisterForm.tsx
+│   │   │   └── OtpForm.tsx
+│   │   ├── hooks/
+│   │   │   └── useAuth.ts
+│   │   ├── pages/
+│   │   │   ├── Login.tsx
+│   │   │   ├── Register.tsx
+│   │   │   └── VerifyOtp.tsx
+│   │   ├── schemas/
+│   │   │   └── auth.schema.ts
+│   │   └── types/
+│   │       └── auth.types.ts
+│   │
+│   ├── dashboard/
+│   │   ├── api/
+│   │   ├── components/
+│   │   │   ├── StatsCards.tsx
+│   │   │   ├── DisasterChart.tsx
+│   │   │   ├── RecentAlerts.tsx
+│   │   │   └── ActiveIncidents.tsx
+│   │   ├── pages/
+│   │   │   └── Dashboard.tsx
+│   │   └── types/
+│   │
+│   ├── disasters/
+│   │   ├── api/
+│   │   │   ├── disaster.api.ts
+│   │   │   └── disaster.queries.ts
+│   │   ├── components/
+│   │   │   ├── DisasterTable.tsx
+│   │   │   ├── DisasterForm.tsx
+│   │   │   ├── DisasterDetails.tsx
+│   │   │   └── DisasterFilters.tsx
+│   │   ├── hooks/
+│   │   │   └── useDisasters.ts
+│   │   ├── pages/
+│   │   │   ├── DisasterList.tsx
+│   │   │   ├── CreateDisaster.tsx
+│   │   │   └── DisasterDetailsPage.tsx
+│   │   ├── schemas/
+│   │   │   └── disaster.schema.ts
+│   │   └── types/
+│   │       └── disaster.types.ts
+│   │
+│   ├── incidents/
+│   ├── alerts/
+│   ├── rescue-teams/
+│   ├── shelters/
+│   ├── resources/
+│   ├── locations/
+│   ├── users/
+│   └── reports/
+│
+├── map/
+│   ├── components/
+│   │   ├── DisasterMap.tsx
+│   │   ├── DisasterMarker.tsx
+│   │   ├── RescueTeamMarker.tsx
+│   │   └── ShelterMarker.tsx
+│   ├── hooks/
+│   │   └── useMap.ts
+│   └── types/
+│       └── map.types.ts
+│
+├── three/
+│   ├── components/
+│   │   ├── DisasterGlobe.tsx
+│   │   ├── Earth.tsx
+│   │   ├── DisasterMarkers.tsx
+│   │   ├── RescueTeams.tsx
+│   │   └── CameraControls.tsx
+│   ├── hooks/
+│   │   └── useGlobe.ts
+│   └── utils/
+│       └── coordinates.ts
+│
+├── websocket/
+│   ├── websocket.client.ts
+│   ├── websocket.types.ts
+│   └── useWebSocket.ts
+│
+├── services/
+│   ├── api/
+│   │   ├── axios.ts
+│   │   └── apiError.ts
+│   │
+│   ├── auth/
+│   │   └── token.service.ts
+│   │
+│   └── notification/
+│       └── notification.service.ts
+│
+├── store/
+│   ├── auth.store.ts
+│   ├── ui.store.ts
+│   ├── sidebar.store.ts
+│   └── disaster.store.ts
+│
+├── hooks/
+│   ├── useDebounce.ts
+│   ├── usePagination.ts
+│   ├── usePermission.ts
+│   ├── useRole.ts
+│   └── useLocalStorage.ts
+│
+├── routes/
+│   ├── ProtectedRoute.tsx
+│   ├── RoleRoute.tsx
+│   └── PermissionRoute.tsx
+│
+├── permissions/
+│   ├── roles.ts
+│   └── permissions.ts
+│
+├── types/
+│   ├── api.types.ts
+│   ├── common.types.ts
+│   └── user.types.ts
+│
+├── constants/
+│   ├── routes.ts
+│   ├── roles.ts
+│   ├── disaster.ts
+│   └── pagination.ts
+│
+├── utils/
+│   ├── formatDate.ts
+│   ├── formatNumber.ts
+│   ├── formatLocation.ts
+│   └── validation.ts
+│
+├── theme/
+│   ├── muiTheme.ts
+│   ├── colors.ts
+│   └── typography.ts
+│
+├── config/
+│   └── env.ts
+│
+├── styles/
+│   ├── globals.css
+│   └── tailwind.css
+│
+└── lib/
+    ├── utils.ts
+    └── logger.ts
