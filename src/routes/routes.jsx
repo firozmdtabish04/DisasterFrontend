@@ -48,7 +48,7 @@ export const router = createBrowserRouter([
   // PROTECTED APP
   // =========================
   {
-    element: <AuthGuard />,
+    // element: <AuthGuard />,  // change after done 
     children: [
       {
         element: <MainLayout />,
